@@ -4,10 +4,15 @@ from fastapi.middleware.cors import CORSMiddleware
 from db import get_db, engine
 from models import Base
 from contextlib import asynccontextmanager
+import sys
+import asyncio
+
+if sys.platform == 'win32':
+    asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    Base.metadata.create_all(bind=engine)
+    #Base.metadata.create_all(bind=engine)
     yield
 
 app = FastAPI(lifespan=lifespan)
@@ -27,4 +32,8 @@ def read_root():
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000, reload=True)
+    import asyncio
+    try:
+        uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
+    except (KeyboardInterrupt, asyncio.CancelledError):
+        pass
